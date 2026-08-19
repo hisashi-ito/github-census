@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GitHub says it has 180 million developers. I counted how many actually show up.</title>
+<meta name="description" content="A census of one million uniformly random GitHub accounts, run entirely inside the free API tier. Six in seven have never set a profile picture; about 6.7 million people commit in a given week.">
+<meta name="author" content="Hisashi Itoh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GitHub says it has 180 million developers. I counted how many actually show up.">
+<meta property="og:description" content="A census of one million uniformly random GitHub accounts, run entirely inside the free API tier. Six in seven have never set a profile picture; about 6.7 million people commit in a given week.">
+<meta property="og:image" content="https://hisashi-ito.github.io/github-census/figures/phase3_rhythm.png">
+<meta property="og:url" content="https://hisashi-ito.github.io/github-census/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://hisashi-ito.github.io/github-census/">
+<style>
+:root{--ink:#1a1a1a;--muted:#5b6470;--rule:#e3e6ea;--bg:#fff;--accent:#b5470f;--link:#1a4f8a}
+@media (prefers-color-scheme:dark){
+  :root{--ink:#e6e8ea;--muted:#9aa3ad;--rule:#2c3138;--bg:#15181c;--accent:#e08a3c;--link:#7fb2e8}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:19px/1.7 Charter,Georgia,'Times New Roman',serif;-webkit-text-size-adjust:100%}
+main{max-width:44em;margin:0 auto;padding:4em 1.2em 6em}
+h1{font-size:2.15em;line-height:1.2;margin:0 0 .5em;letter-spacing:-.01em}
+h2{font-size:1.32em;line-height:1.3;margin:2.6em 0 .7em;letter-spacing:-.005em}
+p{margin:0 0 1.25em}
+.sub{font-size:1.16em;line-height:1.5;color:var(--muted);border-left:3px solid var(--accent);
+  padding-left:1em;margin:0 0 1.6em;font-style:italic}
+.meta{font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--muted);
+  margin:0 0 2.4em;padding-bottom:1.4em;border-bottom:1px solid var(--rule)}
+.disclosure{font-size:.88em;line-height:1.6;color:var(--muted);background:transparent;
+  border:1px solid var(--rule);border-radius:6px;padding:1em 1.2em;margin:0 0 2em}
+figure{margin:2.2em 0}
+figure img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:4px;
+  background:#fff}
+figcaption{font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  color:var(--muted);margin-top:.6em}
+table{border-collapse:collapse;width:100%;margin:1.8em 0;
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+th,td{border-bottom:1px solid var(--rule);padding:.55em .7em;text-align:left}
+th{color:var(--muted);font-weight:600}
+td:nth-child(n+2),th:nth-child(n+2){text-align:right}
+code{font:.85em ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(127,127,127,.13);
+  padding:.12em .35em;border-radius:3px}
+a{color:var(--link)}
+ul{margin:0 0 1.25em;padding-left:1.3em}
+li{margin:.35em 0}
+hr{border:0;border-top:1px solid var(--rule);margin:3em 0}
+footer{font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--muted)}
+@media(max-width:640px){body{font-size:17px}main{padding:2.4em 1em 4em}h1{font-size:1.75em}}
+</style>
+<main>
+<h1>GitHub says it has 180 million developers. I counted how many actually show up.</h1>
+<p class="sub">I sampled 1,000,000 GitHub accounts uniformly at random — not the active ones, not the popular repositories, everyone — using nothing but the free API tier. Six in seven have never set a profile picture. About 6.7 million people commit in a given week.</p>
+<p class="meta">Hisashi Itoh · August 2026 · ~15 min read</p>
+<p class="disclosure"><em>Disclosure: this study was carried out with Claude Code as a working partner — it wrote most of the collection pipeline, the analysis scripts and the figures, and drafted this article. The research questions, the design decisions, the judgment calls and the corrections are mine, including the retraction described near the end. Every number here comes from the data, and I checked them.</em></p>
+<p>Almost everything we know about developers as a population comes from data that already selected for them. The standard research corpora are built from GitHub's event firehose, so an account only enters once it has done something. Trending pages sample what moves. Surveys sample who answers. Each is useful, and each answers a slightly different question than the one I was curious about: if you close your eyes and point at the GitHub user table, who do you land on?</p>
+<p>To find out, I changed exactly one thing about how the sample is drawn, and left everything else alone.</p>
+<h2>The one change: sample the ID space, not the activity</h2>
+<p>GitHub assigns every account a numeric ID. <code>GET /users</code> walks them in order, so reading from the top oversamples 2008. Instead I binary-searched the ID boundaries between signup eras, then drew IDs uniformly at random inside each era and verified each one individually — rejection sampling over the whole ID space. Five eras, 200,000 accounts each, one million total.</p>
+<p>Nothing else conditions the sample. Not activity, not owning a repository, not appearing in an event stream. That single choice is why the numbers below look unfamiliar: the dormant majority is measured instead of filtered out. Bots, spam and throwaway accounts stay in, because they are part of the population being described.</p>
+<p>The whole study ran inside GitHub's free rate limits — 5,000 REST requests and 5,000 GraphQL points an hour. The data API isn't metered, so hitting a limit means waiting, never paying. Twenty-nine days, one token, zero dollars. Every proportion below carries a 95% confidence interval, and where I say two things correlate, I mean correlate.</p>
+<h2>Six in seven accounts have never set a picture</h2>
+<p>77.2% of the sample still carries the default identicon. Weighted to the measured population of each signup era, that becomes <strong>85.5%</strong> — roughly six in seven live accounts have never uploaded a profile image.</p>
+<figure><img src="figures/phase3_avatar.png" alt="Avatar categories across the million" loading="lazy"><figcaption>Avatar categories across the million</figcaption></figure>
+<p>The closest prior study, Wu et al. (2019), reported 21.5% identicons and 56.4% human photos. That looks like a contradiction and isn't: they sampled accounts that had activity, and this census samples everyone registered. But the gap survives the correction. Even restricting my sample to accounts with real activity, identicons still run 44.8% against their 21.5%. The population genuinely changed between 2018 and now — vastly more accounts, most of them recent, and each newer cohort defaults harder than the last.</p>
+<h2>"Active" turns out to mean about six days a year</h2>
+<p>86.1% of random accounts made at most one public contribution in the trailing year. The median account made zero.</p>
+<p>One caveat belongs right here, because it cuts against the headline. GitHub's contribution graph does not count everything: commits land on it only if the commit email is linked to the account, only on a repository's default branch, and not in forks. Issues, pull requests and reviews count anywhere. So an unknown slice of the silent 86% is not silent — it is misconfigured, or working on branches, or committing under an address GitHub cannot match. The direction of that error is one-way: real activity is undercounted, never over. Everything below is a floor.</p>
+<p>The 13.9% who clear the bar are thinner than the word suggests, too. The median active account contributes on <strong>6 days</strong> out of 365, its median longest streak is <strong>2 days</strong>, and it puts a third of its entire year into its single busiest day. Activity isn't a rate. It's a handful of bursts.</p>
+<figure><img src="figures/phase3_activity.png" alt="Activity levels, collaboration, and weekend share" loading="lazy"><figcaption>Activity levels, collaboration, and weekend share</figcaption></figure>
+<p>I went looking for the stereotype of the developer who cron-jobs a commit a day to keep the contribution graph green, and could barely find him: 161 accounts out of a million contributed every single day, and only 22 of those look mechanical. The far tail isn't vanity, it's industry — the largest account in the sample made <strong>1.45 million contributions in one year</strong>, all commits, about 85,000× the median active account.</p>
+<h2>So how many developers are there, really?</h2>
+<p>GitHub reports 180M+ developers, defining a developer as anyone with an account. I wanted to check that from outside, and the ID space makes it possible: <code>GET /users?since=N</code> returns the next 100 accounts <em>that exist</em>, so one call measures how densely that stretch of ID space is populated. Five hundred calls map the density of the whole 300-million-ID space.</p>
+<p>That gives <strong>244.9M personal accounts</strong> [237.5–251.6M] as of mid-2026 — consistent with GitHub's 180M+ from a year earlier plus a year of growth. The official number reproduces from public data alone.</p>
+<p>What the official number doesn't say is how many of those accounts do anything. Applying each era's measured activity rate:</p>
+<table><thead><tr><th>population</th><th>count</th><th>vs GitHub's 180M</th></tr></thead><tbody><tr><td>personal accounts</td><td>244.9M</td><td>136%</td></tr><tr><td>any public activity (≥2/yr)</td><td>33.0M</td><td>18%</td></tr><tr><td><strong>weekly contributors (≥52/yr)</strong></td><td><strong>6.7M</strong></td><td><strong>3.7%</strong></td></tr></tbody></table>
+<p>One in seven accounts does anything in public. One in thirty-six shows up in a given week. Both are floors, not ceilings — work inside private repositories and GitHub Enterprise is invisible here, and by their own counters, <strong>40.6% of active users' contributions are private</strong>.</p>
+<p>The same weights let me draw the growth curve, and it lands on GitHub's own milestones: 109M cumulative by the end of 2022 against the 100M announced in January 2023, and ~185M at mid-2025 against the reported 180M+. The intake keeps accelerating — 44M signups in 2025, and 2026's first half is running at <strong>2.2 accounts per second</strong>, twice GitHub's own "a new developer joins every second."</p>
+<figure><img src="figures/phase3_growth.png" alt="The growth curve, reconstructed" loading="lazy"><figcaption>The growth curve, reconstructed</figcaption></figure>
+<h2>National holidays are visible in the contribution calendar</h2>
+<p>Each account's calendar carries a count per day, so a million of them stacked make a time series. Detrend each country's daily series by its own average and by the global curve, and the public holidays fall out on their own.</p>
+<p>Seven of Japan's eight quietest days are national holidays. Seven of China's. Six of Korea's. Korea's Chuseok runs at <strong>0.25</strong> of a normal Korean day — deeper than American Thanksgiving (0.50) or a British Christmas (0.56). The deepest dips in the data are all East Asian.</p>
+<figure><img src="figures/phase3_rhythm.png" alt="Day of week, and the deepest holiday dip per country" loading="lazy"><figcaption>Day of week, and the deepest holiday dip per country</figcaption></figure>
+<p>The same series exposes a flaw in my own definitions. I treated "weekend" as Saturday–Sunday everywhere. Israel and Egypt observe Friday–Saturday, and it shows: Israel's Sunday behaves like a full working day, and Egypt's Friday is the deepest weekday dip anywhere in the dataset. Turkey, on a Saturday–Sunday weekend, behaves like the West and acts as the control. The measurement error was detectable from the measurement itself, which is the nicest thing I can say about it.</p>
+<p>While I was there, I tested a claim I'd heard for years — that Western developers code on weekends and Japanese ones don't. I could not find a citable source for it anywhere; it circulates as an impression assembled from adjacent, documented things, like the Anglosphere's code-after-hours hiring culture (recorded mostly through the pushback against it, the 2012 <em>501 Developer Manifesto</em>). The testable half of it fails in both directions. 96% of Japanese regulars touch weekends, and Japan's weekend-leaning share (5.4%) sits above the US, the UK, Australia, Canada, France and Spain. Korea (9.8%) and India (9.4%) lead. The weekend-only developer barely exists at all — 0.01% of heavy contributors.</p>
+<figure><img src="figures/phase3_weekend.png" alt="Weekend patterns by country" loading="lazy"><figcaption>Weekend patterns by country</figcaption></figure>
+<h2>The median repository dies the day it is born</h2>
+<p>The sampled million own 2,656,855 public repositories, which as a by-product is a uniform random sample of repositories — something a trending list can't give you.</p>
+<p>The median repository's last push is on the day it was created. <strong>65.3%</strong> were never touched again after their first day, and 9.8% never received a commit at all. 85.3% of original repositories have zero stars while the top 1% hold 90% of all of them: a Gini coefficient of <strong>0.99</strong>, more unequal than any national wealth distribution on record. Only 15% carry a licence.</p>
+<figure><img src="figures/phase3_repo_lifecycle.png" alt="Repository lifecycle by year of creation" loading="lazy"><figcaption>Repository lifecycle by year of creation</figcaption></figure>
+<p>Bucketing the default branch by year of creation turns GitHub's October 2020 <code>master</code>→<code>main</code> switch into a clean step function that never plateaus: about 1% of pre-2020 creations, 68.8% of 2021's, 90.7% of 2026's. Scaled up, personal accounts hold roughly <strong>380M public repositories</strong> and <strong>~11 PB</strong> of code.</p>
+<h2>Reviewers are 2.1% of active developers — and the newest cohorts don't review at all</h2>
+<p>Splitting people by what kinds of contributions they make: 68.1% are solo builders, 7.1% are issue reporters whose median is five contributions (filing one bug is many people's entire public footprint), and <strong>2.1% are reviewers</strong> — the rarest role and by far the deepest, at a median of 129 contributions.</p>
+<figure><img src="figures/phase3_archetype.png" alt="Contribution archetypes, and the profile-completeness gradient" loading="lazy"><figcaption>Contribution archetypes, and the profile-completeness gradient</figcaption></figure>
+<p>Split the same counts by when the account signed up and the trend is uncomfortable. Reviews fall from 5.0% of the 2008–2012 cohort's contributions to <strong>0.7%</strong> of the 2024-onward cohort's, while commits rise from 80.1% to 94.7%. Newer cohorts commit. They don't review.</p>
+<p>One aside that surprised me: a filled-in profile predicts activity better than any avatar does. The active rate climbs monotonically from 8.9% for accounts with none of the five profile fields filled to 82.3% for accounts with all five — a 9.2× spread, against the avatar's ~4×. Both are confounded (an empty profile marks a fresh or throwaway account), and neither is a cause.</p>
+<h2>The AI era is legible in the dependency graph</h2>
+<p>I collected the dependency manifests too — <code>package.json</code>, <code>requirements.txt</code>, <code>pyproject.toml</code> and nine others — for every repository-owning account in the sample. Read as text rather than as metadata, they date the era's transitions precisely.</p>
+<p>LLM SDKs (openai, anthropic, langchain and the rest) appear in 0.42% of repositories created in 2022, 3.3% of 2023's, and <strong>12.6% of those created in 2026</strong>. One new repository in eight.</p>
+<figure><img src="figures/phase3_adoption.png" alt="LLM SDK adoption, and the language crossover" loading="lazy"><figcaption>LLM SDK adoption, and the language crossover</figcaption></figure>
+<p>Language leadership changed while nobody announced it: among 2026 creations, Python (19.4%) and TypeScript (16.3%) both pass JavaScript (13.6%), which had led for a decade. Vue peaked in 2018. vitest passes jest among 2026 creations. FastAPI passes Flask and Django combined.</p>
+<p>Testing has no such curve. Of the 298,007 repositories with a parseable <code>package.json</code>, <strong>65.3% have no test wiring at all</strong> — 154,368 have no test script, and 40,226 still carry npm's literal <code>"no test specified"</code> stub, untouched since <code>npm init</code>.</p>
+<h2>What the avatars are, and one thing they measure by accident</h2>
+<p>Of 53,886 illustrated avatars, 12,656 are anime or manga — outnumbering Western cartoons 11.2 to 1. One Piece leads, then Naruto, Pokémon, Doraemon, Dragon Ball.</p>
+<figure><img src="figures/phase3_anime_titles.png" alt="Identified titles, and identification rate by country" loading="lazy"><figcaption>Identified titles, and identification rate by country</figcaption></figure>
+<p>The more interesting signal turned out to be <em>failure</em> to identify. A source was named for 47% of Chinese anime avatars but only 26% of Japanese ones, and the intervals don't overlap. Looking at the unidentified Japanese avatars by hand explains why: they're commissioned illustrations, doujin work, hand-drawn sketches — pictures that exist nowhere else on the internet. China supplies the most anime avatars of any country and picks the most globally famous works; Japan supplies few and picks the least placeable ones.</p>
+<p>That measurement came with a lesson I nearly published as a finding. The vision model's first pass matched <em>mood</em> to the most famous title wearing it — anything dark and cyber-toned came back as "Serial Experiments Lain" — while reporting high confidence on 97.6% of its answers. I had to retract the affected results. An evidence-first prompt that permits "I don't know" recovered most of it: the bogus Lain group fell from 54 to 2, while One Piece barely moved. The residual accuracy tracks a work's global fame, which is exactly the quantity a cultural census must not assume.</p>
+<p>And one folk claim did survive the census — the one with a documented origin. Ruby, created by Yukihiro Matsumoto, is measurably Japan's language: <strong>17.9%</strong> of Japanese repository owners have a Ruby repository, against 7.8% worldwide and 11.3% in the United States.</p>
+<figure><img src="figures/phase3_ruby_flags.png" alt="Ruby ownership by country" loading="lazy"><figcaption>Ruby ownership by country</figcaption></figure>
+<h2>How it was actually measured</h2>
+<p>The hard constraint was the free tier, and it shaped everything.</p>
+<p>Each account's data comes back in <strong>one GraphQL query</strong>: contribution counts by type, the full 365-day calendar, the private-contribution count, every owned public repository with its languages, topics, licence and default branch, and whether a profile README exists. GraphQL bills by the connection, not by the field, so bundling is nearly free.</p>
+<p>The dependency manifests ride along the same way. <code>object(expression: "HEAD:package.json")</code> is a blob lookup, not a connection, so twelve of them aliased onto repository nodes I was already paging cost almost nothing: a measured <strong>1.00 GraphQL point per user</strong>, against roughly 19,000 REST calls for the naive approach. That single trick is the difference between the domain track being possible and impossible.</p>
+<p>Avatars are 22% of the problem and 100% of the cost, so they get a cascade: a rule detects the default identicon (square, ≤4 flat colours, mirror-symmetric) with zero errors across 1,000 hand-checked images, which leaves only the custom minority for a model. Those went to a local open vision-language model — Qwen3-VL-8B, four instances on four A100s — reaching 95.0% agreement with human labels at ~78 images per second and no marginal cost. That 95% deserves an asterisk I should not leave out: the prompt was refined while looking at the same 221 human-verified avatars used to score it, and those human labels were themselves seeded from model pre-labels. So it measures how consistent the labels are on that set, not accuracy on an independent holdout. A multiply-annotated held-out set is the honest next step and I haven't done it.</p>
+<p>Everything is resumable, because a month-long run will fall over. Each record carries its own status and provenance, and restarts skip what's done. The one failure that hurt: GraphQL returns HTTP 200 with an <code>errors</code> array on some server-side faults, I wasn't treating that path like a 5xx, and one account crash-looped the collector 836 times over fifteen hours.</p>
+<h2>What I'm not claiming</h2>
+<p>This is public, read-only, descriptive work. Agreement with human labels measures consistency, not truth. I don't infer gender. Geography is reported only as area-level aggregates over the minority who declare a location, and never per user. Every cross-track relationship here is an association on a self-selected population — an identicon marks a fresh or dormant account as much as it marks anything about a person — and none of them is causal.</p>
+<p>One hypothesis, offered as a hypothesis. GitHub doubled from 100M to 180M+ accounts during the conversational-LLM era, the same era in which Stack Overflow's monthly question volume fell 98.9%. This census observes that the newest cohort is both the largest and the shallowest, with a median of one contribution. A population entering through AI tools and resolving problems in AI chat rather than public Q&amp;A is consistent with all of that. It is also consistent with bots, with global expansion, and with several other things I can't separate here.</p>
+<p>The collection and analysis code isn't public, and I'd rather say why than let it look coy: the pipeline is built around identified per-account records — logins, avatars, locations — and the parts I would have to strip out to publish it safely are most of it. What I can do instead is specify the design well enough to rebuild: the sampling frame, the band boundaries, the query shapes, the taxonomy and prompt versions are all above. With a free token, anyone can run the same census against a later snapshot of GitHub and see what moved. The specific numbers here come from one run against mid-2026 GitHub, and they are not recomputable from my inputs by a third party.</p>
+<hr>
+<p><em>A Japanese version with the findings up front is <a href="https://qiita.com/hisashi-ito/items/c7bbc1116b81807cf9ac">on Qiita</a>.</em></p>
+<p><em>References: Y. Wu, Y. Zhang, T. Wang, H. Wang, "Exploring the Relationship Between Developer Activities and Profile Images on GitHub," Internetware '19, 2019. GitHub, "Octoverse 2025: A new developer joins GitHub every second," 2025. H. Itoh, "Structural Decline of Stack Overflow," 2026. The 501 Developer Manifesto, 2012.</em></p>
+<hr>
+<footer>
+<p>Also published <a href="https://medium.com/@it.hisas/github-says-it-has-180-million-developers-i-counted-how-many-actually-show-up-d63359d7f81e">on Medium</a>. A Japanese version with the findings
+up front is <a href="https://qiita.com/hisashi-ito/items/c7bbc1116b81807cf9ac">on Qiita</a>.</p>
+</footer>
+</main>
