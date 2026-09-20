@@ -17,6 +17,9 @@ A few of the findings:
 - The median repository's last push is the day it was created.
 - LLM SDKs appear in 12.6% of repositories created in 2026, against 0.4% of
   those created in 2022.
+- One in five repositories pushed in September 2026 ships an instruction file
+  for a coding agent (`AGENTS.md`, `CLAUDE.md`, …); among 34,920 of them, one
+  is explicitly malicious and 25 switch the agent's permission checks off.
 
 This repository holds the published article and its figures. The collection
 and analysis pipeline is not public — it is built around identified
