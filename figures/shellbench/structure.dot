@@ -1,0 +1,20 @@
+digraph structure {
+  rankdir=TB;
+  graph [bgcolor="white", nodesep=0.5, ranksep=0.5];
+  node [shape=box, style="rounded,filled", fontname="Noto Sans CJK JP", fontsize=15, fixedsize=true];
+  edge [color="#33507a", arrowsize=0.8];
+
+  a [label="実ユーザーの依頼\n10,456,576 件\n（オプトインのトレース）", width=3.4, height=1.15, fillcolor="#eef3fa", color="#33507a"];
+  b [label="埋め込み＋クラスタリングで\n依頼のパターンを抽出\n（233 クラスタ → シナリオ化）", width=3.9, height=1.15, fillcolor="#eef3fa", color="#33507a"];
+  c [label="Harbor タスク × 100\n依頼文 instruction.md\n環境 environment\n（ファイル中央値 188 件）\n検証 tests（非公開）", width=3.9, height=1.6, fillcolor="#e8eefb", color="#33507a"];
+  d [label="コンテナ内で\nエージェントが実行\n12 モデル × 5 ハーネス\n× 3 effort × 3 試行\n＝ 53,100 試行", width=3.6, height=1.6, fillcolor="#eef3fa", color="#33507a"];
+  e [label="LLM ジャッジ\n（GPT-6.1 Sol）が\n項目ごとに真偽を判定\n721 項目", width=3.4, height=1.45, fillcolor="#fff6e0", color="#8a6d1a"];
+  f [label="全項目合格で\nタスク合格\n（all-or-nothing）", width=3.2, height=1.15, fillcolor="#eef7ee", color="#3a7a3a"];
+
+  { rank=same; a; d; }
+  { rank=same; b; e; }
+  { rank=same; c; f; }
+  a -> b -> c;
+  d -> e -> f;
+  c -> d [constraint=false, style=dashed];
+}
