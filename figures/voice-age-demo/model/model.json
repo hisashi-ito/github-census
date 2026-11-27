@@ -1,0 +1,33 @@
+{
+ "chunk_bytes": 20971520,
+ "chunks": [
+  "part_00",
+  "part_01",
+  "part_02",
+  "part_03",
+  "part_04",
+  "part_05",
+  "part_06",
+  "part_07",
+  "part_08",
+  "part_09",
+  "part_10",
+  "part_11",
+  "part_12",
+  "part_13",
+  "part_14",
+  "part_15",
+  "part_16",
+  "part_17",
+  "part_18"
+ ],
+ "description": "WavLM base-plus fine-tuned 2-head classifier (age 6-class + gender 2-class), fp32 ONNX, split into chunks for GitHub Pages hosting. Concatenate part_0..part_7 in order to restore the file.",
+ "input": "waveform: float32 [batch, samples], 16kHz mono, max 160000 samples used in training",
+ "model": "wavlm_2head_ft_single.onnx",
+ "outputs": [
+  "age_probs (6: teens, twenties, thirties, fourties, fifties, sixties)",
+  "gender_probs (2: M, F)"
+ ],
+ "sha256": "3e3ee5df17a8cc65e4e5332c3d81f6c45208a4aac1df2a98d404095854b0e65a",
+ "total_bytes": 379422292
+}
