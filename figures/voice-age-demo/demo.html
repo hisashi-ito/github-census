@@ -22,19 +22,18 @@
     margin: 0; background: var(--bg); color: var(--ink);
     line-height: 1.75;
   }
-  .hero {
-    background: linear-gradient(135deg, #14232f 0%, #1d3a4d 60%, #27536e 100%);
-    color: #fff; padding: 44px 20px 34px; text-align: center;
+  .hero { max-width: 1060px; margin: 0 auto; padding: 26px 16px 4px; text-align: center; }
+  .hero img {
+    width: 100%; height: auto; display: block; border-radius: 16px;
+    box-shadow: 0 6px 28px rgba(20, 35, 47, 0.14);
   }
-  .hero h1 { font-size: 30px; margin: 14px 0 6px; letter-spacing: 0.04em; }
-  .hero p { margin: 0; color: #c8d8e2; font-size: 15px; }
-  .hero svg { display: block; margin: 0 auto; }
-  .chips { margin-top: 18px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .chips { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   .chip {
-    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.35);
-    color: #fff; border-radius: 999px; padding: 3px 14px; font-size: 13px;
+    background: #fff; border: 1px solid var(--line);
+    color: var(--ink); border-radius: 999px; padding: 3px 14px; font-size: 13px;
   }
-  .chip b { color: #ffb35c; font-weight: 700; }
+  .chip b { color: #c96f14; font-weight: 700; }
   .wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
   .card {
     background: var(--card); border: 1px solid var(--line); border-radius: 14px;
@@ -74,23 +73,8 @@
 <body>
 
 <header class="hero">
-  <svg width="300" height="46" viewBox="0 0 300 46" aria-hidden="true">
-    <g fill="#ffb35c">
-      <rect x="6" y="18" width="5" height="10" rx="2"/><rect x="20" y="12" width="5" height="22" rx="2"/>
-      <rect x="34" y="6" width="5" height="34" rx="2"/><rect x="48" y="14" width="5" height="18" rx="2"/>
-      <rect x="62" y="20" width="5" height="6" rx="2"/><rect x="76" y="10" width="5" height="26" rx="2"/>
-      <rect x="90" y="4" width="5" height="38" rx="2"/><rect x="104" y="16" width="5" height="14" rx="2"/>
-      <rect x="118" y="21" width="5" height="4" rx="2"/><rect x="132" y="12" width="5" height="22" rx="2"/>
-      <rect x="146" y="7" width="5" height="32" rx="2"/><rect x="160" y="17" width="5" height="12" rx="2"/>
-      <rect x="174" y="20" width="5" height="6" rx="2"/><rect x="188" y="9" width="5" height="28" rx="2"/>
-      <rect x="202" y="5" width="5" height="36" rx="2"/><rect x="216" y="15" width="5" height="16" rx="2"/>
-      <rect x="230" y="19" width="5" height="8" rx="2"/><rect x="244" y="11" width="5" height="24" rx="2"/>
-      <rect x="258" y="16" width="5" height="14" rx="2"/><rect x="272" y="20" width="5" height="6" rx="2"/>
-      <rect x="286" y="14" width="5" height="18" rx="2"/>
-    </g>
-  </svg>
-  <h1>声の性別・年代推定デモ</h1>
-  <p>読み上げた声から、年代（10代〜60代）と性別を推定します</p>
+  <h1 class="sr-only">声の性別・年代推定デモ</h1>
+  <img src="hero.jpg" alt="声の性別・年代推定デモ ― 声から年代（10代〜60代の6クラス）と性別を推定する研究段階のデモです。推定は目安です。">
   <div class="chips">
     <span class="chip">年代 macro-F1 <b>41.9</b></span>
     <span class="chip">±1年代 正解率 <b>88.5%</b></span>
