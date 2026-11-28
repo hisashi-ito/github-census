@@ -4,47 +4,132 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>声の性別・年代推定デモ</title>
+<meta name="description" content="声から年代（10代〜60代）と性別を推定する研究段階のデモ。WavLM ファインチューニングモデルをブラウザ内で実行します。">
 <style>
-  body { font-family: sans-serif; margin: 24px auto; max-width: 640px; padding: 0 16px; color: #222; }
-  h1 { font-size: 22px; }
-  button { font-size: 16px; padding: 10px 18px; margin: 6px 4px; cursor: pointer; }
-  button:disabled { opacity: 0.5; cursor: default; }
-  #status { margin: 12px 0; color: #444; white-space: pre-wrap; }
-  #progressWrap { background: #eee; height: 14px; border-radius: 7px; overflow: hidden; margin: 8px 0; display: none; }
-  #progressBar { background: #2b7bbb; height: 100%; width: 0%; }
-  .bar-row { display: flex; align-items: center; margin: 4px 0; }
-  .bar-label { width: 64px; }
-  .bar-track { flex: 1; background: #eee; height: 16px; border-radius: 4px; overflow: hidden; }
-  .bar-fill { background: #e08a2e; height: 100%; }
-  .bar-fill-g { background: #4a9e6b; height: 100%; }
-  .bar-val { width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
-  .note { color: #555; font-size: 14px; line-height: 1.7; }
-  #sentence { background: #f6f6f6; padding: 10px 14px; border-radius: 6px; }
+  :root {
+    --ink: #1d2733;
+    --sub: #5a6a78;
+    --accent: #e08a2e;
+    --accent2: #2b7bbb;
+    --green: #4a9e6b;
+    --card: #ffffff;
+    --bg: #f2f5f8;
+    --line: #dde5ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    margin: 0; background: var(--bg); color: var(--ink);
+    line-height: 1.75;
+  }
+  .hero {
+    background: linear-gradient(135deg, #14232f 0%, #1d3a4d 60%, #27536e 100%);
+    color: #fff; padding: 44px 20px 34px; text-align: center;
+  }
+  .hero h1 { font-size: 30px; margin: 14px 0 6px; letter-spacing: 0.04em; }
+  .hero p { margin: 0; color: #c8d8e2; font-size: 15px; }
+  .hero svg { display: block; margin: 0 auto; }
+  .chips { margin-top: 18px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .chip {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.35);
+    color: #fff; border-radius: 999px; padding: 3px 14px; font-size: 13px;
+  }
+  .chip b { color: #ffb35c; font-weight: 700; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 22px 18px; margin-bottom: 18px;
+    box-shadow: 0 2px 10px rgba(20, 35, 47, 0.05);
+  }
+  .card h2 {
+    font-size: 17px; margin: 0 0 10px; padding-left: 10px;
+    border-left: 4px solid var(--accent);
+  }
+  .card h3 { font-size: 15px; margin: 16px 0 6px; color: var(--ink); }
+  button {
+    font-size: 16px; padding: 11px 22px; margin: 6px 6px 6px 0; cursor: pointer;
+    border-radius: 999px; border: 1px solid var(--accent2);
+    background: var(--accent2); color: #fff; font-weight: 600;
+  }
+  button.secondary { background: #fff; color: var(--accent2); }
+  button:disabled { opacity: 0.45; cursor: default; }
+  #status { margin: 10px 0 2px; color: var(--sub); font-size: 14px; white-space: pre-wrap; }
+  #progressWrap { background: #e8eef3; height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0 2px; display: none; }
+  #progressBar { background: var(--accent); height: 100%; width: 0%; transition: width 0.2s; }
+  #sentence {
+    background: #fdf6ec; border: 1px solid #f0dcbc; padding: 12px 16px;
+    border-radius: 10px; font-size: 17px; text-align: center;
+  }
+  .bar-row { display: flex; align-items: center; margin: 5px 0; font-size: 14px; }
+  .bar-label { width: 52px; color: var(--ink); }
+  .bar-track { flex: 1; background: #edf1f5; height: 16px; border-radius: 4px; overflow: hidden; }
+  .bar-fill { background: var(--accent); height: 100%; }
+  .bar-fill-g { background: var(--green); height: 100%; }
+  .bar-val { width: 58px; text-align: right; font-variant-numeric: tabular-nums; color: var(--sub); }
+  .note { color: var(--sub); font-size: 14px; }
+  footer { text-align: center; color: var(--sub); font-size: 13px; padding: 8px 16px 36px; }
+  a { color: var(--accent2); }
 </style>
 </head>
 <body>
-<h1>声の性別・年代推定デモ</h1>
-<p>声から年代（10代〜60代の6クラス）と性別を推定する研究段階のデモです。推定は目安です。</p>
-<p>初回はモデルのダウンロードに約380MBの通信が発生します。Wi-Fi 環境での利用を推奨します。</p>
 
-<button id="loadBtn">モデルをダウンロード</button>
-<div id="progressWrap"><div id="progressBar"></div></div>
-<div id="status">まだモデルを読み込んでいません。</div>
+<header class="hero">
+  <svg width="300" height="46" viewBox="0 0 300 46" aria-hidden="true">
+    <g fill="#ffb35c">
+      <rect x="6" y="18" width="5" height="10" rx="2"/><rect x="20" y="12" width="5" height="22" rx="2"/>
+      <rect x="34" y="6" width="5" height="34" rx="2"/><rect x="48" y="14" width="5" height="18" rx="2"/>
+      <rect x="62" y="20" width="5" height="6" rx="2"/><rect x="76" y="10" width="5" height="26" rx="2"/>
+      <rect x="90" y="4" width="5" height="38" rx="2"/><rect x="104" y="16" width="5" height="14" rx="2"/>
+      <rect x="118" y="21" width="5" height="4" rx="2"/><rect x="132" y="12" width="5" height="22" rx="2"/>
+      <rect x="146" y="7" width="5" height="32" rx="2"/><rect x="160" y="17" width="5" height="12" rx="2"/>
+      <rect x="174" y="20" width="5" height="6" rx="2"/><rect x="188" y="9" width="5" height="28" rx="2"/>
+      <rect x="202" y="5" width="5" height="36" rx="2"/><rect x="216" y="15" width="5" height="16" rx="2"/>
+      <rect x="230" y="19" width="5" height="8" rx="2"/><rect x="244" y="11" width="5" height="24" rx="2"/>
+      <rect x="258" y="16" width="5" height="14" rx="2"/><rect x="272" y="20" width="5" height="6" rx="2"/>
+      <rect x="286" y="14" width="5" height="18" rx="2"/>
+    </g>
+  </svg>
+  <h1>声の性別・年代推定デモ</h1>
+  <p>読み上げた声から、年代（10代〜60代）と性別を推定します</p>
+  <div class="chips">
+    <span class="chip">年代 macro-F1 <b>41.9</b></span>
+    <span class="chip">±1年代 正解率 <b>88.5%</b></span>
+    <span class="chip">性別 正解率 <b>96.3%</b></span>
+  </div>
+</header>
 
-<div id="main" style="display:none">
-  <p>次の文を読み上げてください。</p>
-  <p id="sentence">今日は良い天気ですね。明日も晴れるといいなと思います。</p>
-  <button id="recBtn">録音開始</button>
-  <button id="stopBtn" disabled>停止して推定</button>
-  <p>録音できない場合は、ボイスメモ等で録音した音声ファイルでも推定できます。</p>
-  <button id="fileBtn">音声ファイルを選ぶ</button>
-  <input type="file" id="fileInput" accept="audio/*" style="display:none">
-  <h2>推定結果</h2>
-  <div id="results"><p class="note">まだ推定していません。</p></div>
+<div class="wrap">
+
+  <section class="card">
+    <h2>1. モデルの読み込み</h2>
+    <p class="note">初回はモデルのダウンロードに約380MBの通信が発生します。Wi-Fi 環境での利用を推奨します。モデルはブラウザの中だけで実行され、音声が外部へ送信されることはありません。</p>
+    <button id="loadBtn">モデルをダウンロード</button>
+    <div id="progressWrap"><div id="progressBar"></div></div>
+    <div id="status">まだモデルを読み込んでいません。</div>
+  </section>
+
+  <section class="card" id="main" style="display:none">
+    <h2>2. 声の入力</h2>
+    <p>次の文を読み上げてください。</p>
+    <p id="sentence">今日は良い天気ですね。明日も晴れるといいなと思います。</p>
+    <button id="recBtn">録音開始</button>
+    <button id="stopBtn" class="secondary" disabled>停止して推定</button>
+    <p class="note">録音できない場合は、ボイスメモ等で録音した音声ファイルでも推定できます。</p>
+    <button id="fileBtn" class="secondary">音声ファイルを選ぶ</button>
+    <input type="file" id="fileInput" accept="audio/*" style="display:none">
+    <h3>推定結果</h3>
+    <div id="results"><p class="note">まだ推定していません。</p></div>
+  </section>
+
+  <section class="card">
+    <h2>このデモについて</h2>
+    <p class="note">モデルは音響モデル WavLM をファインチューニングしたもので、年代と性別を同時に出力します。学習と評価には Common Voice 日本語版を用いました。テスト話者749名での測定では、年代の正解率 43.3%（±1年代まで含めると 88.5%）、性別の正解率 96.3% でした。研究段階のデモであり、推定は目安です。</p>
+    <p class="note">詳しい方法と結果は、Qiita の記事「<a href="https://qiita.com/hisashi-ito/items/9d63d07f19134c0c2d86">声から年齢は推定できるか ― Common Voice 日本語版で年代分類を試した結果</a>」と、note の記事「<a href="https://note.com/hisashi_itoh/n/ndcec8106ef49">声を聞いただけで、年齢はわかるのか</a>」にまとめています。</p>
+  </section>
+
 </div>
 
-<h2>このデモについて</h2>
-<p class="note">モデルは WavLM をファインチューニングしたもので、年代と性別を同時に出力します。Common Voice 日本語版のテスト話者749名での測定では、年代の正解率 43.3%（±1年代まで含めると 88.5%）、性別の正解率 96.3% でした。音声はブラウザの中だけで処理され、外部へ送信されません。</p>
+<footer>声の性別・年代推定デモ ― 研究段階のプロトタイプです</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
 <script>
